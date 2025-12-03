@@ -49,16 +49,22 @@ ElectionScope is a comprehensive web application built with Django for analyzing
 
 3.  **Install Dependencies**:
     ```bash
-    pip install django
+    pip install -r requirements.txt
     ```
 
-4.  **Database Setup**:
+4.  **Environment Configuration**:
+    Create a `.env` file in the project root directory and add your secret key:
+    ```bash
+    SECRET_KEY='your-secret-key-here'
+    ```
+
+5.  **Database Setup**:
     Initialize the database schema:
     ```bash
     python manage.py migrate
     ```
 
-5.  **Import Legacy Data**:
+6.  **Import Legacy Data**:
     The project includes a custom management command to import data from the provided `bincom_test.sql` file.
     *   Ensure `bincom_test.sql` is in the project root directory.
     *   Run the import command:
