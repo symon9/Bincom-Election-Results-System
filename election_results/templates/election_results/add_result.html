@@ -1,0 +1,120 @@
+{% extends 'election_results/base.html' %}
+
+{% block title %}Add Result{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="fw-bold mb-0">
+                <span class="text-gradient">Add Results for Polling Unit</span>
+            </h2>
+        </div>
+        
+        <div class="card glass-panel border-0">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h4 class="mb-4 text-white border-bottom border-secondary border-opacity-25 pb-2">
+                        <i class="bi bi-geo-alt me-2 text-primary"></i>Polling Unit Details
+                    </h4>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label for="lga" class="form-label">Select LGA</label>
+                            <select id="lga" class="form-select" required>
+                                <option value="">Choose LGA...</option>
+                                {% for lga in lgas %}
+                                    <option value="{{ lga.lga_id }}">{{ lga.lga_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="ward" class="form-label">Select Ward</label>
+                            <select id="ward" class="form-select" disabled required>
+                                <option value="">Choose Ward...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="polling_unit" class="form-label">Select Polling Unit</label>
+                            <select id="polling_unit" name="polling_unit_uniqueid" class="form-select" disabled required>
+                                <option value="">Choose Polling Unit...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-4 text-white border-bottom border-secondary border-opacity-25 pb-2">
+                        <i class="bi bi-bar-chart me-2 text-info"></i>Party Scores
+                    </h4>
+                    <div class="row g-3 mb-5">
+                        {% for party in parties %}
+                            <div class="col-md-3 col-sm-6">
+                                <label for="party_{{ party.partyid }}" class="form-label text-muted small">{{ party.partyname }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-secondary">{{ party.partyname|slice:":3" }}</span>
+                                    <input type="number" class="form-control" id="party_{{ party.partyid }}" name="party_{{ party.partyname }}" required min="0" placeholder="0">
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <label for="entered_by_user" class="form-label">Entered By</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="entered_by_user" name="entered_by_user" required placeholder="Your Name">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end mt-4 mt-md-0">
+                            <button type="submit" class="btn btn-success px-5 py-2 fw-bold">
+                                <i class="bi bi-check-lg me-2"></i> Save Results
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#lga').change(function() {
+            var lgaId = $(this).val();
+            var wardSelect = $('#ward');
+            var puSelect = $('#polling_unit');
+            
+            wardSelect.empty().append('<option value="">Choose Ward...</option>').prop('disabled', true);
+            puSelect.empty().append('<option value="">Choose Polling Unit...</option>').prop('disabled', true);
+            
+            if (lgaId) {
+                $.getJSON('/api/wards/' + lgaId + '/', function(data) {
+                    $.each(data, function(key, value) {
+                        wardSelect.append('<option value="' + value.ward_id + '">' + value.ward_name + '</option>');
+                    });
+                    wardSelect.prop('disabled', false);
+                });
+            }
+        });
+
+        $('#ward').change(function() {
+            var wardId = $(this).val();
+            var puSelect = $('#polling_unit');
+            
+            puSelect.empty().append('<option value="">Choose Polling Unit...</option>').prop('disabled', true);
+            
+            if (wardId) {
+                $.getJSON('/api/polling-units/' + wardId + '/', function(data) {
+                    $.each(data, function(key, value) {
+                        puSelect.append('<option value="' + value.uniqueid + '">' + value.polling_unit_name + '</option>');
+                    });
+                    puSelect.prop('disabled', false);
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
